@@ -1,60 +1,102 @@
-from sys import argv as ARGUMENTS
-import os
+import util
 
-TERMINAL_WIDTH: int = os.get_terminal_size().columns
+import sqlite3
 
-
-# -- UTIL ------------------------------------------------------------------------------------------->
+connection = sqlite3.connect("AhuaGallery.db")
 
 
-def clear():
-    os.system(ARGUMENTS[1])  # Use platform specific clear string
+def operationCreateItemSection():
+    pass
 
 
-def getHalfTerminalOffset(length: int) -> str:
-    halfTerminal: int = int(TERMINAL_WIDTH / 2)
-    halfString: int = int(length / 2)
-
-    return " " * (halfTerminal - halfString)
+def operationCreateItemMaterial():
+    pass
 
 
-def printCenter(*messages):
-    stringLength: int = 0
-    for message in messages:
-        stringLength += len(str(message))
+def operationAddItem():
+    cursor = connection.cursor()
 
-    print(getHalfTerminalOffset(stringLength) + str(messages[0]), end="")
-    for message in messages:
-        if message == messages[0]:
-            continue
-        print(message, end="")
-    print()
+    if util.booleanResponse("Create new section?"):
+        operationCreateItemSection()
+
+    if util.booleanResponse("Create new material?"):
+        operationCreateItemMaterial()
+
+    name = util.stringResponse("Name")
+    price = util.numberResponse("Price")
+
+    sections = cursor.execute("SELECT * FROM section").fetchall()
+
+    i = 1
+    for section in sections:
+        util.printCenter(i, ". ", section[1])
+
+    item_section = sections[int(util.numberResponse("Section", 1, len(sections))) - 1]
+
+    materials = cursor.execute("SELECT * FROM material").fetchall()
+
+    i = 1
+    for material in materials:
+        util.printCenter(i, ". ", material[1])
+
+    item_material = materials[int(util.numberResponse("Material", 1, len(materials))) - 1]
+
+    cursor.execute("INSERT INTO item (name, price, item_section, item_material) VALUES(?, ?, ?, ?)",
+                   (name, price, item_section[0], item_material[0]))
+
+    connection.commit()
+
+    util.clear()
+    print("\n")
+
+    print(f"Created item with properties:"
+          f"\nName: {name}"
+          f"\nPrice: {price}"
+          f"\nSection: {item_section[1]}"
+          f"\nMaterial: {item_material[1]}")
+
+    util.continuePrompt()
 
 
-# -- USAGE ------------------------------------------------------------------------------------------->
+def operationRemoveItem():
+    print("remove item")
+
+
+def operationQuit():
+    print("quit")
+    connection.close()
+    exit(0)
 
 
 OPERATIONS = [
-    "Add item",
-    "Remove item"
+    ("Add item", operationAddItem),
+    ("Remove item", operationRemoveItem),
+    ("Create item section", operationCreateItemSection),
+    ("Create item material", operationCreateItemMaterial),
+    ("Quit", operationQuit)
 ]
 
 
 def chooseOperation():
     i = 1
     for operation in OPERATIONS:
-        printCenter(i, ". ", operation)
+        util.printCenter(i, ". ", operation[0])
         i += 1
+
+    response = int(util.numberResponse("Operation", 1, len(OPERATIONS)))
+
+    OPERATIONS[response - 1][1]()
 
 
 def openMainMenu():
-    clear()
+    util.clear()
     print("\n\n")
-    printCenter("Te Puia Museum Item Manager")
-    print("\n")
+    util.printCenter("Te Puia Museum Item Manager")
+    print()
 
     chooseOperation()
 
 
 if __name__ == '__main__':
-    openMainMenu()
+    while True:
+        openMainMenu()
