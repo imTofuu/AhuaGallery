@@ -5,4 +5,6 @@ if ! test -f ./main.py ; then
   exit 0
 fi
 
+python3 -m pip install tabulate
+
 python3 main.py clear
