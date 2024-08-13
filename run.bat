@@ -6,4 +6,6 @@ echo main.py not found in current directory. Move into the root directory of the
 goto :EOF
 :run
 
+pip install tabulate
+
 python main.py cls
