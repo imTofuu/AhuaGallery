@@ -6,15 +6,77 @@ connection = sqlite3.connect("AhuaGallery.db")
 
 
 def operationCreateItemSection():
-    pass
+    util.addToPath("Create section")
+
+    cursor = connection.cursor()
+
+    util.clear()
+
+    name = util.stringResponse("Name")
+
+    util.clear()
+
+    print(f"Creating section with properties:"
+          f"\nName: {name}")
+
+    if not util.booleanResponse("Create section?"):
+        util.popPath()
+        util.clear()
+        return
+
+    cursor.execute(f"INSERT INTO section (section_name) VALUES('{name}')")
+    connection.commit()
+
+    util.popPath()
+    util.clear()
 
 
 def operationCreateItemMaterial():
-    pass
+    util.addToPath("Create material")
+
+    cursor = connection.cursor()
+
+    util.clear()
+
+    name = util.stringResponse("Name")
+
+    util.clear()
+
+    print(f"Creating material with properties:"
+          f"\nName: {name}")
+
+    if not util.booleanResponse("Create material?"):
+        util.popPath()
+        util.clear()
+        return
+
+    cursor.execute(f"INSERT INTO material (material_name) VALUES('{name}')")
+    connection.commit()
+
+    util.popPath()
+    util.clear()
 
 
 def operationAddItem():
+    util.addToPath("Add item")
+
     cursor = connection.cursor()
+
+    util.clear()
+
+    while not len(cursor.execute("SELECT * FROM section").fetchall()):
+        print("There are no existing sections, so you must create one.")
+        util.continuePrompt()
+        operationCreateItemSection()
+
+    util.clear()
+
+    while not len(cursor.execute("SELECT * FROM material").fetchall()):
+        print("There are no existing materials, so you must create one.")
+        util.continuePrompt()
+        operationCreateItemMaterial()
+
+    util.clear()
 
     if util.booleanResponse("Create new section?"):
         operationCreateItemSection()
@@ -41,29 +103,44 @@ def operationAddItem():
 
     item_material = materials[int(util.numberResponse("Material", 1, len(materials))) - 1]
 
-    cursor.execute("INSERT INTO item (name, price, item_section, item_material) VALUES(?, ?, ?, ?)",
-                   (name, price, item_section[0], item_material[0]))
-
-    connection.commit()
-
     util.clear()
-    print("\n")
 
-    print(f"Created item with properties:"
+    print(f"Creating item with properties:"
           f"\nName: {name}"
           f"\nPrice: {price}"
           f"\nSection: {item_section[1]}"
           f"\nMaterial: {item_material[1]}")
 
-    util.continuePrompt()
+    if not util.booleanResponse("Create item?"):
+        util.popPath()
+        return
+
+    cursor.execute("INSERT INTO item (name, price, item_section, item_material) VALUES(?, ?, ?, ?)",
+                   (name, price, item_section[0], item_material[0]))
+    connection.commit()
+
+    util.popPath()
 
 
 def operationRemoveItem():
+    util.addToPath("Remove item")
+
+    util.clear()
+
     print("remove item")
+
+    util.popPath()
 
 
 def operationQuit():
-    print("quit")
+    util.addToPath("Quit")
+
+    util.clear()
+
+    if not util.booleanResponse("Quit?"):
+        util.popPath()
+        return
+
     connection.close()
     exit(0)
 
@@ -89,12 +166,15 @@ def chooseOperation():
 
 
 def openMainMenu():
+    util.addToPath("Main Menu")
+
     util.clear()
-    print("\n\n")
     util.printCenter("Te Puia Museum Item Manager")
     print()
 
     chooseOperation()
+
+    util.popPath()
 
 
 if __name__ == '__main__':

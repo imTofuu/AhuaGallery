@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/bin/bash
 
 if ! test -f ./main.py ; then
   echo "Failed to run. Ensure you are in the main directory of the project."

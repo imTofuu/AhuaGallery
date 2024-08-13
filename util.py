@@ -2,11 +2,30 @@ import math
 from sys import argv as ARGUMENTS
 import os
 
+import util
+
 TERMINAL_WIDTH: int = os.get_terminal_size().columns
+
+path = []
+
+
+def addToPath(name: str):
+    path.append(name)
+
+
+def popPath():
+    path.pop()
+
+
+def removeFromPath(name: str):
+    path.remove(name)
 
 
 def clear():
     os.system(ARGUMENTS[1])  # Use platform specific clear string
+    for i in path:
+        print(f"> {i} ", end="")
+    print("\n")
 
 
 def getHalfTerminalOffset(length: int) -> str:
@@ -43,7 +62,7 @@ def stringResponse(message) -> str:
     return input(message + ": ")
 
 
-def numberResponse(message, lbound = -math.inf, ubound = math.inf) -> float:
+def numberResponse(message, lbound=-math.inf, ubound=math.inf) -> float:
     while True:
         response = input(message + ": ")
 
