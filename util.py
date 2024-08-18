@@ -2,8 +2,6 @@ import math
 from sys import argv as ARGUMENTS
 import os
 
-import util
-
 TERMINAL_WIDTH: int = os.get_terminal_size().columns
 
 path = []
@@ -22,7 +20,7 @@ def removeFromPath(name: str):
 
 
 def clear():
-    os.system(ARGUMENTS[1])  # Use platform specific clear string
+    os.system(ARGUMENTS[1])  # Use platform specific clear string. This is passed in the run scripts
     for i in path:
         print(f"> {i} ", end="")
     print("\n")
