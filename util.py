@@ -1,3 +1,8 @@
+"""
+Module made to create simple reusable functions in for the Ahua Gallery application
+Drew Bryan      30 July 2024
+"""
+
 import math
 from sys import argv as ARGUMENTS
 import os
