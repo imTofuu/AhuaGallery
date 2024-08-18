@@ -1,6 +1,12 @@
+"""
+Program made to manage the items in Ahua Gallery automatically using a database.
+Drew Bryan      30 July 2024
+"""
+
 import util
 
 import sqlite3
+import tabulate
 
 connection = sqlite3.connect("AhuaGallery.db")
 
@@ -89,17 +95,23 @@ def operationAddItem():
 
     sections = cursor.execute("SELECT * FROM section").fetchall()
 
+    util.printCenter("Choose section:")
+
     i = 1
     for section in sections:
         util.printCenter(i, ". ", section[1])
+        i += 1
 
     item_section = sections[int(util.numberResponse("Section", 1, len(sections))) - 1]
 
     materials = cursor.execute("SELECT * FROM material").fetchall()
 
+    util.printCenter("Choose material:")
+
     i = 1
     for material in materials:
         util.printCenter(i, ". ", material[1])
+        i += 1
 
     item_material = materials[int(util.numberResponse("Material", 1, len(materials))) - 1]
 
@@ -127,7 +139,19 @@ def operationRemoveItem():
 
     util.clear()
 
-    print("remove item")
+    cursor = connection.cursor()
+
+    removeID = int(util.numberResponse("Enter ID to remove"))
+
+    util.printCenter("Remove item with values:")
+    util.printCenter(cursor.execute(f"SELECT * FROM item WHERE id = {removeID}").fetchall()[0])
+
+    if not util.booleanResponse("Remove item"):
+        util.popPath()
+        return
+
+    cursor.execute(f"DELETE FROM item WHERE id = {removeID}")
+    connection.commit()
 
     util.popPath()
 
@@ -145,8 +169,78 @@ def operationQuit():
     exit(0)
 
 
+def operationQueryItem():
+    util.addToPath("Query item")
+
+    util.clear()
+
+    cursor = connection.cursor()
+
+    tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+    tables.pop(0)  # Remove the first entry, 'sqlite_sequence'
+
+    util.printCenter("Choose the table to be queried on")
+
+    i = 1
+    for table in tables:
+        util.printCenter(i, ". ", table[0])
+        i += 1
+
+    selectedTable = tables[int(util.numberResponse("Table", 1, len(tables))) - 1][0]
+
+    util.printCenter("Choose the fields to return from the query. Enter their indices in a space seperated format.")
+
+    fields = cursor.execute(f"PRAGMA table_info('{selectedTable}')").fetchall()
+
+    i = 1
+    for field in fields:
+        util.printCenter(i, ". ", field[1])
+        i += 1
+
+    selectedFieldIndices = []
+    while True:
+        fieldsResponse = util.stringResponse("Fields")
+
+        for response in fieldsResponse.split(" "):
+            try:
+                response = int(response)
+            except ValueError:
+                selectedFieldIndices.clear()
+                print("Enter valid response")
+                continue
+
+            if response < 1 or response > len(fields):
+                selectedFieldIndices.clear()
+                print("Enter valid response")
+                continue
+            selectedFieldIndices.append(response)
+        break
+
+    fieldHeadings = []
+
+    resultsString = "SELECT "
+    for selectedField in selectedFieldIndices:
+        fieldHeadings.append(fields[selectedField - 1][1])
+        resultsString += (", " if selectedField != selectedFieldIndices[0] else "") + fields[selectedField - 1][1]
+    resultsString += f" FROM {selectedTable}"
+
+    results = cursor.execute(resultsString).fetchall()
+
+    util.addToPath("Query results")
+    util.clear()
+
+    print(tabulate.tabulate(results, fieldHeadings))
+
+    util.continuePrompt()
+
+    util.popPath()
+
+    util.popPath()
+
+
 OPERATIONS = [
     ("Add item", operationAddItem),
+    ("Query item(s)", operationQueryItem),
     ("Remove item", operationRemoveItem),
     ("Create item section", operationCreateItemSection),
     ("Create item material", operationCreateItemMaterial),

@@ -4,7 +4,7 @@
 ## Use:
 
 Items and all their metadata in the database can be added, removed, and 
-queried automatically by navigating through the interface
+queried automatically by navigating through the interface.
 
 ## Run:
 
