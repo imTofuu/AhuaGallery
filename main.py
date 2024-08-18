@@ -18,14 +18,14 @@ def operationCreateItemSection():
 
     util.clear()
 
-    name = util.stringResponse("Name")
+    name = util.stringResponse("Pick name for section")
 
     util.clear()
 
     print(f"Creating section with properties:"
           f"\nName: {name}")
 
-    if not util.booleanResponse("Create section?"):
+    if not util.booleanResponse("Are you sure you want to create this section?"):
         util.popPath()
         util.clear()
         return
@@ -44,14 +44,14 @@ def operationCreateItemMaterial():
 
     util.clear()
 
-    name = util.stringResponse("Name")
+    name = util.stringResponse("Pick name for material")
 
     util.clear()
 
     print(f"Creating material with properties:"
           f"\nName: {name}")
 
-    if not util.booleanResponse("Create material?"):
+    if not util.booleanResponse("Are you sure you want to create this material?"):
         util.popPath()
         util.clear()
         return
@@ -90,30 +90,32 @@ def operationAddItem():
     if util.booleanResponse("Create new material?"):
         operationCreateItemMaterial()
 
-    name = util.stringResponse("Name")
-    price = util.numberResponse("Price")
+    name = util.stringResponse("Pick name for item")
+    price = util.numberResponse("Pick price for item")
 
     sections = cursor.execute("SELECT * FROM section").fetchall()
 
-    util.printCenter("Choose section:")
+    util.printCenter("Sections:")
 
     i = 1
     for section in sections:
         util.printCenter(i, ". ", section[1])
         i += 1
 
-    item_section = sections[int(util.numberResponse("Section", 1, len(sections))) - 1]
+    chosenSectionIndex = int(util.numberResponse("Pick section (type index)", 1, len(sections))) - 1
+    item_section = sections[chosenSectionIndex]
 
     materials = cursor.execute("SELECT * FROM material").fetchall()
 
-    util.printCenter("Choose material:")
+    util.printCenter("Materials:")
 
     i = 1
     for material in materials:
         util.printCenter(i, ". ", material[1])
         i += 1
 
-    item_material = materials[int(util.numberResponse("Material", 1, len(materials))) - 1]
+    chosenMaterialIndex = int(util.numberResponse("Pick material (type index)", 1, len(materials))) - 1
+    item_material = materials[chosenMaterialIndex]
 
     util.clear()
 
@@ -123,7 +125,7 @@ def operationAddItem():
           f"\nSection: {item_section[1]}"
           f"\nMaterial: {item_material[1]}")
 
-    if not util.booleanResponse("Create item?"):
+    if not util.booleanResponse("Are you sure you want to create this item?"):
         util.popPath()
         return
 
@@ -141,12 +143,12 @@ def operationRemoveItem():
 
     cursor = connection.cursor()
 
-    removeID = int(util.numberResponse("Enter ID to remove"))
+    removeID = int(util.numberResponse("Type ID to remove"))
 
-    util.printCenter("Remove item with values:")
+    util.printCenter("Removing item with values:")
     util.printCenter(cursor.execute(f"SELECT * FROM item WHERE id = {removeID}").fetchall()[0])
 
-    if not util.booleanResponse("Remove item"):
+    if not util.booleanResponse("Are you sure you want to remove this item?"):
         util.popPath()
         return
 
@@ -161,7 +163,7 @@ def operationQuit():
 
     util.clear()
 
-    if not util.booleanResponse("Quit?"):
+    if not util.booleanResponse("Are you sure you want to quit?"):
         util.popPath()
         return
 
