@@ -143,7 +143,31 @@ def operationRemoveItem():
 
     cursor = connection.cursor()
 
-    removeID = int(util.numberResponse("Type ID to remove"))
+    util.printCenter("Items:")
+
+    items = cursor.execute(f"""
+        SELECT item.id, item.name, item.price, section.section_name, material.material_name
+        FROM item
+        INNER JOIN main.section section ON section.section_id = item.item_section
+        INNER JOIN main.material material on material.material_id = item.item_material
+        """).fetchall()
+
+    print(tabulate.tabulate(items, ["ID", "Name", "Price", "Section", "Material"]))
+
+    item = None
+    removeID = None
+    while True:
+        try:
+            removeID = int(util.numberResponse("Type ID to remove"))
+            item = [cursor.execute(f"""
+                    SELECT item.name, item.price, section.section_name, material.material_name
+                    FROM item
+                    INNER JOIN main.section section ON section.section_id = item.item_section
+                    INNER JOIN main.material material on material.material_id = item.item_material
+                    WHERE item.id = {removeID}""").fetchall()[0]]
+            break
+        except IndexError:
+            print("Input a valid ID")
 
     util.printCenter("Removing item with values:")
     util.printCenter(cursor.execute(f"SELECT * FROM item WHERE id = {removeID}").fetchall()[0])
@@ -251,6 +275,8 @@ OPERATIONS = [
 
 
 def chooseOperation():
+    util.printCenter("Enter the index of the operation you would like to perform")
+
     i = 1
     for operation in OPERATIONS:
         util.printCenter(i, ". ", operation[0])
