@@ -170,7 +170,7 @@ def operationRemoveItem():
             print("Input a valid ID")
 
     util.printCenter("Removing item with values:")
-    util.printCenter(cursor.execute(f"SELECT * FROM item WHERE id = {removeID}").fetchall()[0])
+    print(tabulate.tabulate(item, ["Name", "Price", "Section", "Material"]))
 
     if not util.booleanResponse("Are you sure you want to remove this item?"):
         util.popPath()
@@ -227,20 +227,27 @@ def operationQueryItem():
     while True:
         fieldsResponse = util.stringResponse("Fields")
 
-        for response in fieldsResponse.split(" "):
-            try:
-                response = int(response)
-            except ValueError:
-                selectedFieldIndices.clear()
-                print("Enter valid response")
-                continue
+        def resp(respondedFields) -> bool:
+            for response in respondedFields.split(" "):
+                if response == "":
+                    continue
+                try:
+                    response = int(response)
+                except ValueError:
+                    selectedFieldIndices.clear()
+                    print("Enter valid response")
+                    return False
 
-            if response < 1 or response > len(fields):
-                selectedFieldIndices.clear()
-                print("Enter valid response")
-                continue
-            selectedFieldIndices.append(response)
-        break
+                if response < 1 or response > len(fields):
+                    selectedFieldIndices.clear()
+                    print("Enter valid response")
+                    return False
+
+                selectedFieldIndices.append(response)
+            return True
+
+        if resp(fieldsResponse):
+            break
 
     fieldHeadings = []
 
