@@ -138,14 +138,14 @@ def operationAddItem():
     while not len(cursor.execute("SELECT * FROM section").fetchall()):
         print("There are no existing sections, so you must create one.")
         util.continuePrompt()
-        operationCreateItemSection()
+        return
 
     util.clear()
 
     while not len(cursor.execute("SELECT * FROM material").fetchall()):
         print("There are no existing materials, so you must create one.")
         util.continuePrompt()
-        operationCreateItemMaterial()
+        return
 
     util.clear()
 
@@ -167,7 +167,7 @@ def operationAddItem():
         util.printCenter(i, ". ", section[1])
         i += 1
 
-    chosenSectionIndex = int(util.numberResponse("Pick section (type index)", 1, len(sections))) - 1
+    chosenSectionIndex = int(util.numberResponse("Pick section (type number)", 1, len(sections))) - 1
     item_section = sections[chosenSectionIndex]
 
     materials = cursor.execute("SELECT * FROM material").fetchall()
@@ -179,7 +179,7 @@ def operationAddItem():
         util.printCenter(i, ". ", material[1])
         i += 1
 
-    chosenMaterialIndex = int(util.numberResponse("Pick material (type index)", 1, len(materials))) - 1
+    chosenMaterialIndex = int(util.numberResponse("Pick material (type number)", 1, len(materials))) - 1
     item_material = materials[chosenMaterialIndex]
 
     util.clear()
@@ -296,7 +296,7 @@ OPERATIONS = [
 
 
 def chooseOperation():
-    util.printCenter("Enter the index of the operation you would like to perform")
+    util.printCenter("Enter the number of the operation you would like to perform")
 
     i = 1
     for operation in OPERATIONS:
