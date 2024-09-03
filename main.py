@@ -11,12 +11,75 @@ import tabulate
 connection = sqlite3.connect("AhuaGallery.db")
 
 
+def chooseTable():
+    cursor = connection.cursor()
+
+    tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+    tables.pop(0)  # Remove the first entry, 'sqlite_sequence'
+
+    i = 1
+    for table in tables:
+        util.printCenter(i, ". ", table[0])
+        i += 1
+
+    return tables[int(util.numberResponse("Table", 1, len(tables))) - 1][0]
+
+
+def chooseFields(table):
+    cursor = connection.cursor()
+
+    fields = cursor.execute(f"PRAGMA table_info('{table}')").fetchall()
+
+    i = 1
+    for field in fields:
+        util.printCenter(i, ". ", field[1])
+        i += 1
+
+    selectedFieldIndices = []
+    while True:
+        fieldsResponse = util.stringResponse("Fields")
+
+        def resp(respondedFields) -> bool:
+            for response in respondedFields.split(" "):
+                if response == "":
+                    continue
+                try:
+                    response = int(response)
+                except ValueError:
+                    selectedFieldIndices.clear()
+                    print("Enter valid response")
+                    return False
+
+                if response < 1 or response > len(fields):
+                    selectedFieldIndices.clear()
+                    print("Enter valid response")
+                    return False
+
+                selectedFieldIndices.append(response)
+            return True
+
+        if resp(fieldsResponse):
+            break
+
+    fieldHeadings = []
+
+    resultsString = "SELECT "
+    for selectedField in selectedFieldIndices:
+        fieldHeadings.append(fields[selectedField - 1][1])
+        resultsString += (", " if selectedField != selectedFieldIndices[0] else "") + fields[selectedField - 1][1]
+    resultsString += f" FROM {table}"
+
+    return cursor.execute(resultsString).fetchall(), fieldHeadings
+
+
 def operationCreateItemSection():
     util.addToPath("Create section")
 
     cursor = connection.cursor()
 
     util.clear()
+
+    util.printCenter("A section is the category of item e.g. Baskets, Tools")
 
     name = util.stringResponse("Pick name for section")
 
@@ -43,6 +106,8 @@ def operationCreateItemMaterial():
     cursor = connection.cursor()
 
     util.clear()
+
+    util.printCenter("A material is what the item is made of e.g. Flax, Wood")
 
     name = util.stringResponse("Pick name for material")
 
@@ -200,64 +265,13 @@ def operationQueryItem():
 
     util.clear()
 
-    cursor = connection.cursor()
-
-    tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
-    tables.pop(0)  # Remove the first entry, 'sqlite_sequence'
-
     util.printCenter("Choose the table to be queried on")
 
-    i = 1
-    for table in tables:
-        util.printCenter(i, ". ", table[0])
-        i += 1
+    selectedTable = chooseTable()
 
-    selectedTable = tables[int(util.numberResponse("Table", 1, len(tables))) - 1][0]
+    util.printCenter("Choose the fields to return from the query. Enter their indices in a space seperated format")
 
-    util.printCenter("Choose the fields to return from the query. Enter their indices in a space seperated format.")
-
-    fields = cursor.execute(f"PRAGMA table_info('{selectedTable}')").fetchall()
-
-    i = 1
-    for field in fields:
-        util.printCenter(i, ". ", field[1])
-        i += 1
-
-    selectedFieldIndices = []
-    while True:
-        fieldsResponse = util.stringResponse("Fields")
-
-        def resp(respondedFields) -> bool:
-            for response in respondedFields.split(" "):
-                if response == "":
-                    continue
-                try:
-                    response = int(response)
-                except ValueError:
-                    selectedFieldIndices.clear()
-                    print("Enter valid response")
-                    return False
-
-                if response < 1 or response > len(fields):
-                    selectedFieldIndices.clear()
-                    print("Enter valid response")
-                    return False
-
-                selectedFieldIndices.append(response)
-            return True
-
-        if resp(fieldsResponse):
-            break
-
-    fieldHeadings = []
-
-    resultsString = "SELECT "
-    for selectedField in selectedFieldIndices:
-        fieldHeadings.append(fields[selectedField - 1][1])
-        resultsString += (", " if selectedField != selectedFieldIndices[0] else "") + fields[selectedField - 1][1]
-    resultsString += f" FROM {selectedTable}"
-
-    results = cursor.execute(resultsString).fetchall()
+    results, fieldHeadings = chooseFields(selectedTable)
 
     util.addToPath("Query results")
     util.clear()
