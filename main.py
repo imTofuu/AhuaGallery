@@ -321,5 +321,12 @@ def openMainMenu():
 
 
 if __name__ == '__main__':
+
+    util.clear()
+
+    util.printCenter("Welcome to the Ahua Gallery database manager")
+    util.printCenter("This is where database items will be managed along with their materials and sections.")
+    util.continuePrompt()
+
     while True:
         openMainMenu()
